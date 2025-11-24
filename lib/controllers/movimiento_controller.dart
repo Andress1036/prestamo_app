@@ -6,7 +6,7 @@ class MovimientoController extends ChangeNotifier {
   final MovimientoRepository _repo = MovimientoRepository();
 
   List<Movimiento> movimientos = [];
-  double total = 0;
+  double total = 0.0;
   bool loading = false;
 
   Future<void> cargarMovimientos(int personaId) async {
@@ -20,31 +20,37 @@ class MovimientoController extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> agregarPrestamo(
-      int personaId, double monto, String descripcion) async {
+  Future<void> agregarPrestamo(int personaId, double monto, String descripcion) async {
     final movimiento = Movimiento(
       personaId: personaId,
-      tipo: "prestamo",
+      tipo: 'prestamo',
       monto: monto,
       descripcion: descripcion,
       fecha: DateTime.now(),
     );
-
     await _repo.insertMovimiento(movimiento);
     await cargarMovimientos(personaId);
   }
 
-  Future<void> agregarAbono(
-      int personaId, double monto, String descripcion) async {
+  Future<void> agregarAbono(int personaId, double monto, String descripcion) async {
     final movimiento = Movimiento(
       personaId: personaId,
-      tipo: "abono",
+      tipo: 'abono',
       monto: monto,
       descripcion: descripcion,
       fecha: DateTime.now(),
     );
-
     await _repo.insertMovimiento(movimiento);
+    await cargarMovimientos(personaId);
+  }
+
+  Future<void> editarMonto(int id, double nuevoMonto, int personaId) async {
+    await _repo.updateMonto(id, nuevoMonto);
+    await cargarMovimientos(personaId);
+  }
+
+  Future<void> borrarMovimiento(int id, int personaId) async {
+    await _repo.deleteMovimiento(id);
     await cargarMovimientos(personaId);
   }
 }

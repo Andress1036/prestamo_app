@@ -1,7 +1,7 @@
 class Movimiento {
   int? id;
   int personaId;
-  String tipo; // "prestamo" o "abono"
+  String tipo; // "prestamo" or "abono"
   double monto;
   String descripcion;
   DateTime fecha;
@@ -28,12 +28,12 @@ class Movimiento {
 
   factory Movimiento.fromMap(Map<String, dynamic> map) {
     return Movimiento(
-      id: map['id'],
-      personaId: map['personaId'],
-      tipo: map['tipo'],
-      monto: map['monto'],
-      descripcion: map['descripcion'],
-      fecha: DateTime.parse(map['fecha']),
+      id: map['id'] as int?,
+      personaId: map['personaId'] as int,
+      tipo: map['tipo'] as String,
+      monto: (map['monto'] as num).toDouble(),
+      descripcion: map['descripcion'] as String? ?? '',
+      fecha: DateTime.parse(map['fecha'] as String),
     );
   }
 }

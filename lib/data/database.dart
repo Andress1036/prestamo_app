@@ -18,18 +18,52 @@ class AppDatabase {
 
     return await openDatabase(
       path,
-      version: 1,
+      version: 3, // súbelo a 3 para forzar migración
       onCreate: (db, version) async {
         await db.execute('''
-          CREATE TABLE movimientos (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            personaId INTEGER NOT NULL,
-            tipo TEXT NOT NULL,
-            monto REAL NOT NULL,
-            descripcion TEXT,
-            fecha TEXT NOT NULL
-          )
-        ''');
+      CREATE TABLE personas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL
+      )
+    ''');
+
+        await db.execute('''
+      CREATE TABLE movimientos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        personaId INTEGER NOT NULL,
+        tipo TEXT NOT NULL,
+        monto REAL NOT NULL,
+        descripcion TEXT,
+        fecha TEXT NOT NULL,
+        FOREIGN KEY (personaId) REFERENCES personas(id) ON DELETE CASCADE
+      )
+    ''');
+      },
+
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // ⚠️ SOLO PARA DESARROLLO: limpia todo
+        await db.execute('DROP TABLE IF EXISTS movimientos');
+        await db.execute('DROP TABLE IF EXISTS personas');
+
+        // recrea
+        await db.execute('''
+      CREATE TABLE personas (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        nombre TEXT NOT NULL
+      )
+    ''');
+
+        await db.execute('''
+      CREATE TABLE movimientos (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        personaId INTEGER NOT NULL,
+        tipo TEXT NOT NULL,
+        monto REAL NOT NULL,
+        descripcion TEXT,
+        fecha TEXT NOT NULL,
+        FOREIGN KEY (personaId) REFERENCES personas(id) ON DELETE CASCADE
+      )
+    ''');
       },
     );
   }

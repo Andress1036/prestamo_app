@@ -1,6 +1,6 @@
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:intl/intl.dart';
 import '../controllers/movimiento_controller.dart';
 import '../data/movimiento.dart';
 
@@ -8,23 +8,20 @@ class MovimientosPage extends StatefulWidget {
   final int personaId;
   final String personaName;
 
-  const MovimientosPage({
-    super.key,
-    required this.personaId,
-    required this.personaName,
-  });
+  const MovimientosPage({super.key, required this.personaId, required this.personaName});
 
   @override
   State<MovimientosPage> createState() => _MovimientosPageState();
 }
 
 class _MovimientosPageState extends State<MovimientosPage> {
+  final formatter = NumberFormat('#,##0.00', 'es_CO');
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<MovimientoController>(context, listen: false)
-          .cargarMovimientos(widget.personaId);
+      Provider.of<MovimientoController>(context, listen: false).cargarMovimientos(widget.personaId);
     });
   }
 
@@ -33,70 +30,77 @@ class _MovimientosPageState extends State<MovimientosPage> {
     final c = Provider.of<MovimientoController>(context);
 
     return Scaffold(
-      appBar: AppBar(title: Text("Movimientos de ${widget.personaName}")),
+      appBar: AppBar(title: Text('Movimientos de ${widget.personaName}')),
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
           FloatingActionButton.extended(
-            heroTag: "prestamo",
-            onPressed: () => _agregarMovimiento(context, tipo: "prestamo"),
-            label: Text("Préstamo"),
-            icon: Icon(Icons.add),
+            heroTag: 'prestamo',
+            onPressed: () => _openAddDialog(context, tipo: 'prestamo'),
+            label: const Text('Préstamo'),
+            icon: const Icon(Icons.add),
           ),
           const SizedBox(height: 12),
           FloatingActionButton.extended(
-            heroTag: "abono",
-            onPressed: () => _agregarMovimiento(context, tipo: "abono"),
-            label: Text("Abono"),
-            icon: Icon(Icons.remove),
+            heroTag: 'abono',
+            onPressed: () => _openAddDialog(context, tipo: 'abono'),
+            label: const Text('Abono'),
+            icon: const Icon(Icons.remove),
           ),
         ],
       ),
       body: c.loading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 Container(
-                  padding: EdgeInsets.all(20),
                   width: double.infinity,
                   color: Colors.black12,
+                  padding: const EdgeInsets.all(16),
                   child: Text(
-                    "Total actual: \$${c.total.toStringAsFixed(2)}",
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+                    'Total actual: \$${formatter.format(c.total)}',
+                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                 ),
                 Expanded(
-                  child: ListView.builder(
-                    itemCount: c.movimientos.length,
-                    itemBuilder: (_, i) {
-                      final m = c.movimientos[i];
-
-                      return ListTile(
-                        title: Text(
-                          "${m.tipo == 'prestamo' ? '+' : '-'} \$${m.monto}",
-                          style: TextStyle(
-                            color: m.tipo == 'prestamo'
-                                ? Colors.green
-                                : Colors.red,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 18,
-                          ),
+                  child: c.movimientos.isEmpty
+                      ? const Center(child: Text('No hay movimientos'))
+                      : ListView.builder(
+                          itemCount: c.movimientos.length,
+                          itemBuilder: (_, i) {
+                            final Movimiento m = c.movimientos[i];
+                            return ListTile(
+                              title: Text(
+                                '${m.tipo == "prestamo" ? "+" : "-"} \$${formatter.format(m.monto)}',
+                                style: TextStyle(
+                                    color: m.tipo == "prestamo" ? Colors.green : Colors.red,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                              subtitle: Text(m.descripcion),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text('${m.fecha.day}/${m.fecha.month}/${m.fecha.year}'),
+                                  IconButton(
+                                    icon: const Icon(Icons.edit, color: Colors.blue),
+                                    onPressed: () => _openEditDialog(context, m),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete, color: Colors.red),
+                                    onPressed: () => _confirmDelete(context, m),
+                                  ),
+                                ],
+                              ),
+                            );
+                          },
                         ),
-                        subtitle: Text(m.descripcion),
-                        trailing: Text(
-                          "${m.fecha.day}/${m.fecha.month}/${m.fecha.year}",
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      );
-                    },
-                  ),
-                ),
+                )
               ],
             ),
     );
   }
 
-  void _agregarMovimiento(BuildContext context, {required String tipo}) {
+  void _openAddDialog(BuildContext context, {required String tipo}) {
     final montoCtrl = TextEditingController();
     final descCtrl = TextEditingController();
 
@@ -104,44 +108,107 @@ class _MovimientosPageState extends State<MovimientosPage> {
       context: context,
       builder: (_) {
         return AlertDialog(
-          title: Text(tipo == "prestamo" ? "Nuevo préstamo" : "Nuevo abono"),
+          title: Text(tipo == 'prestamo' ? 'Nuevo préstamo' : 'Nuevo abono'),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: montoCtrl,
-                decoration: InputDecoration(labelText: "Monto"),
                 keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Monto'),
               ),
               TextField(
                 controller: descCtrl,
-                decoration: InputDecoration(labelText: "Descripción"),
+                decoration: const InputDecoration(labelText: 'Descripción'),
               ),
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: Text("Cancelar")),
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
             ElevatedButton(
-              child: Text("Guardar"),
               onPressed: () async {
-                final monto = double.tryParse(montoCtrl.text);
-                if (monto == null) return;
+                final monto = double.tryParse(montoCtrl.text.trim());
+                if (monto == null || monto <= 0) return;
 
-                final c = Provider.of<MovimientoController>(context, listen: false);
-
-                if (tipo == "prestamo") {
-                  await c.agregarPrestamo(widget.personaId, monto, descCtrl.text);
+                final controller = Provider.of<MovimientoController>(context, listen: false);
+                if (tipo == 'prestamo') {
+                  await controller.agregarPrestamo(widget.personaId, monto, descCtrl.text);
                 } else {
-                  await c.agregarAbono(widget.personaId, monto, descCtrl.text);
+                  await controller.agregarAbono(widget.personaId, monto, descCtrl.text);
                 }
 
                 if (!mounted) return;
                 Navigator.pop(context);
               },
+              child: const Text('Guardar'),
             ),
           ],
         );
       },
     );
+  }
+
+  void _openEditDialog(BuildContext context, Movimiento m) {
+    final montoCtrl = TextEditingController(text: m.monto.toString());
+    final descCtrl = TextEditingController(text: m.descripcion);
+
+    showDialog(
+      context: context,
+      builder: (_) {
+        return AlertDialog(
+          title: Text('Editar ${m.tipo}'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: montoCtrl,
+                keyboardType: TextInputType.number,
+                decoration: const InputDecoration(labelText: 'Monto'),
+              ),
+              TextField(
+                controller: descCtrl,
+                decoration: const InputDecoration(labelText: 'Descripción'),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+            ElevatedButton(
+              onPressed: () async {
+                final nuevoMonto = double.tryParse(montoCtrl.text.trim());
+                if (nuevoMonto == null || nuevoMonto <= 0) return;
+
+                final controller = Provider.of<MovimientoController>(context, listen: false);
+                await controller.editarMonto(m.id!, nuevoMonto, widget.personaId);
+
+                // si cambias descripción: actualizar local copy y recargar (simple approach: delete+insert not implemented)
+                if (!mounted) return;
+                Navigator.pop(context);
+              },
+              child: const Text('Guardar'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _confirmDelete(BuildContext context, Movimiento m) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (_) => AlertDialog(
+        title: const Text('Eliminar movimiento'),
+        content: const Text('¿Eliminar este movimiento?'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
+          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Eliminar')),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final controller = Provider.of<MovimientoController>(context, listen: false);
+      await controller.borrarMovimiento(m.id!, widget.personaId);
+    }
   }
 }

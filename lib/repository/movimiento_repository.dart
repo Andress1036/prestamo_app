@@ -33,8 +33,18 @@ class MovimientoRepository {
       WHERE personaId = ?
     ''', [personaId]);
 
-    // return (result.first["total"] ?? 0) * 1.0; // este me lo dio el chatgpt primero
     final totalValue = result.first['total'] as num?;
-  return (totalValue ?? 0).toDouble();
+    return (totalValue ?? 0).toDouble();
+  }
+
+  Future<void> updateMonto(int id, double nuevoMonto) async {
+    final db = await AppDatabase.instance.database;
+    await db.update('movimientos', {'monto': nuevoMonto},
+        where: 'id = ?', whereArgs: [id]);
+  }
+
+  Future<void> deleteMovimiento(int id) async {
+    final db = await AppDatabase.instance.database;
+    await db.delete('movimientos', where: 'id = ?', whereArgs: [id]);
   }
 }

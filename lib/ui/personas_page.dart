@@ -30,7 +30,7 @@ class _PersonasPageState extends State<PersonasPage> {
     final personaCtrl = Provider.of<PersonaController>(context);
     // movimiento controller será usado para calcular total al presionar la persona
     return Scaffold(
-      appBar: AppBar(title: const Text('Personas')),
+      appBar: AppBar(title: const Text('Prestamos a:')),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddPersonaDialog(context),
         child: const Icon(Icons.add),
@@ -53,7 +53,7 @@ class _PersonasPageState extends State<PersonasPage> {
                           providers: [
                             ChangeNotifierProvider(create: (_) => MovimientoController()),
                           ],
-                          child: MovimientosPage(personaId: p.id!, personaName: p.nombre),
+                          child: MovimientosPage(personaId: p.id!, personaName: p.nombre[0].toUpperCase()),
                         ),
                       ),
                     );

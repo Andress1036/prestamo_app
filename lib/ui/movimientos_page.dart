@@ -8,7 +8,11 @@ class MovimientosPage extends StatefulWidget {
   final int personaId;
   final String personaName;
 
-  const MovimientosPage({super.key, required this.personaId, required this.personaName});
+  const MovimientosPage({
+    super.key,
+    required this.personaId,
+    required this.personaName,
+  });
 
   @override
   State<MovimientosPage> createState() => _MovimientosPageState();
@@ -21,7 +25,10 @@ class _MovimientosPageState extends State<MovimientosPage> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      Provider.of<MovimientoController>(context, listen: false).cargarMovimientos(widget.personaId);
+      Provider.of<MovimientoController>(
+        context,
+        listen: false,
+      ).cargarMovimientos(widget.personaId);
     });
   }
 
@@ -59,42 +66,130 @@ class _MovimientosPageState extends State<MovimientosPage> {
                   padding: const EdgeInsets.all(16),
                   child: Text(
                     'Total actual: \$${formatter.format(c.total)}',
-                    style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
                 Expanded(
                   child: c.movimientos.isEmpty
                       ? const Center(child: Text('No hay movimientos'))
                       : ListView.builder(
+                          padding: const EdgeInsets.all(12),
                           itemCount: c.movimientos.length,
                           itemBuilder: (_, i) {
                             final Movimiento m = c.movimientos[i];
-                            return ListTile(
-                              title: Text(
-                                '${m.tipo == "prestamo" ? "+" : "-"} \$${formatter.format(m.monto)}',
-                                style: TextStyle(
-                                    color: m.tipo == "prestamo" ? Colors.green : Colors.red,
-                                    fontWeight: FontWeight.bold),
+
+                            final isPrestamo = m.tipo == "prestamo";
+                            final bgColor = isPrestamo
+                                ? Colors.red.shade100
+                                : Colors.green.shade100;
+
+                            return Card(
+                              elevation: 2,
+                              margin: const EdgeInsets.only(bottom: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                              subtitle: Text(m.descripcion),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  Text('${m.fecha.day}/${m.fecha.month}/${m.fecha.year}'),
-                                  IconButton(
-                                    icon: const Icon(Icons.edit, color: Colors.blue),
-                                    onPressed: () => _openEditDialog(context, m),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete, color: Colors.red),
-                                    onPressed: () => _confirmDelete(context, m),
-                                  ),
-                                ],
+                              color: bgColor,
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                child: Row(
+                                  crossAxisAlignment: CrossAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      isPrestamo
+                                          ? Icons.call_made
+                                          : Icons.call_received,
+                                      color: isPrestamo
+                                          ? Colors.red
+                                          : Colors.green,
+                                      size: 24,
+                                    ),
+
+                                    const SizedBox(width: 10),
+
+                                    // TEXTO PRINCIPAL (monto + descripción)
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          // MONTO + FECHA EN LA MISMA LÍNEA
+                                          Row(
+                                            mainAxisAlignment:
+                                                MainAxisAlignment.spaceBetween,
+                                            children: [
+                                              Text(
+                                                '${isPrestamo ? "+" : "-"} \$${formatter.format(m.monto)}',
+                                                style: TextStyle(
+                                                  fontSize: 16,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: isPrestamo
+                                                      ? Colors.red
+                                                      : Colors.green,
+                                                ),
+                                              ),
+                                              Text(
+                                                '${m.fecha.day}/${m.fecha.month}/${m.fecha.year}',
+                                                style: TextStyle(
+                                                  fontSize: 13,
+                                                  color: Colors.grey.shade700,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+
+                                          const SizedBox(height: 3),
+
+                                          Text(
+                                            m.descripcion,
+                                            style: const TextStyle(
+                                              fontSize: 14,
+                                            ),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+
+                                    // BOTONES
+                                    Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            color: Colors.blue,
+                                          ),
+                                          iconSize: 20,
+                                          onPressed: () =>
+                                              _openEditDialog(context, m),
+                                        ),
+                                        IconButton(
+                                          icon: const Icon(
+                                            Icons.delete,
+                                            color: Colors.black54,
+                                          ),
+                                          iconSize: 20,
+                                          onPressed: () =>
+                                              _confirmDelete(context, m),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
                               ),
                             );
                           },
                         ),
-                )
+                ),
               ],
             ),
     );
@@ -124,20 +219,35 @@ class _MovimientosPageState extends State<MovimientosPage> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
             ElevatedButton(
               onPressed: () async {
                 final monto = double.tryParse(montoCtrl.text.trim());
                 if (monto == null || monto <= 0) return;
 
-                final controller = Provider.of<MovimientoController>(context, listen: false);
+                final controller = Provider.of<MovimientoController>(
+                  context,
+                  listen: false,
+                );
+
                 if (tipo == 'prestamo') {
-                  await controller.agregarPrestamo(widget.personaId, monto, descCtrl.text);
+                  await controller.agregarPrestamo(
+                    widget.personaId,
+                    monto,
+                    descCtrl.text,
+                  );
                 } else {
-                  await controller.agregarAbono(widget.personaId, monto, descCtrl.text);
+                  await controller.agregarAbono(
+                    widget.personaId,
+                    monto,
+                    descCtrl.text,
+                  );
                 }
 
-                if (!mounted) return;
+                if (!context.mounted) return;
                 Navigator.pop(context);
               },
               child: const Text('Guardar'),
@@ -172,17 +282,26 @@ class _MovimientosPageState extends State<MovimientosPage> {
             ],
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Cancelar'),
+            ),
             ElevatedButton(
               onPressed: () async {
                 final nuevoMonto = double.tryParse(montoCtrl.text.trim());
                 if (nuevoMonto == null || nuevoMonto <= 0) return;
 
-                final controller = Provider.of<MovimientoController>(context, listen: false);
-                await controller.editarMonto(m.id!, nuevoMonto, widget.personaId);
+                final controller = Provider.of<MovimientoController>(
+                  context,
+                  listen: false,
+                );
+                await controller.editarMonto(
+                  m.id!,
+                  nuevoMonto,
+                  widget.personaId,
+                );
 
-                // si cambias descripción: actualizar local copy y recargar (simple approach: delete+insert not implemented)
-                if (!mounted) return;
+                if (!context.mounted) return;
                 Navigator.pop(context);
               },
               child: const Text('Guardar'),
@@ -200,14 +319,23 @@ class _MovimientosPageState extends State<MovimientosPage> {
         title: const Text('Eliminar movimiento'),
         content: const Text('¿Eliminar este movimiento?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancelar')),
-          TextButton(onPressed: () => Navigator.pop(context, true), child: const Text('Eliminar')),
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text('Cancelar'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: const Text('Eliminar'),
+          ),
         ],
       ),
     );
 
     if (confirmed == true) {
-      final controller = Provider.of<MovimientoController>(context, listen: false);
+      final controller = Provider.of<MovimientoController>(
+        context,
+        listen: false,
+      );
       await controller.borrarMovimiento(m.id!, widget.personaId);
     }
   }

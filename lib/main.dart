@@ -22,7 +22,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Prestamo Simple',
+      title: 'Prestamos',
       theme: ThemeData(primarySwatch: Colors.indigo),
       home: const PersonasPage(),
       debugShowCheckedModeBanner: false,

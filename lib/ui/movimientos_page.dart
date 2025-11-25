@@ -38,32 +38,62 @@ class _MovimientosPageState extends State<MovimientosPage> {
 
     return Scaffold(
       appBar: AppBar(title: Text('Movimientos de ${widget.personaName}')),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton.extended(
-            heroTag: 'prestamo',
-            onPressed: () => _openAddDialog(context, tipo: 'prestamo'),
-            label: const Text('Préstamo'),
-            icon: const Icon(Icons.add),
+      bottomNavigationBar: ClipRRect(
+  borderRadius: const BorderRadius.only(
+    topLeft: Radius.circular(25),
+    topRight: Radius.circular(25),
+  ),
+  child: BottomAppBar(
+    shape: const CircularNotchedRectangle(),
+    height: 70,
+    color: const Color.fromARGB(255, 238, 223, 223),
+    child: Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        ElevatedButton.icon(
+          onPressed: () => _openAddDialog(context, tipo: 'prestamo'),
+          icon: const Icon(Icons.add),
+          label: const Text('Préstamo'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15), // botones redondeados
+            ),
           ),
-          const SizedBox(height: 12),
-          FloatingActionButton.extended(
-            heroTag: 'abono',
-            onPressed: () => _openAddDialog(context, tipo: 'abono'),
-            label: const Text('Abono'),
-            icon: const Icon(Icons.remove),
+        ),
+        ElevatedButton.icon(
+          onPressed: () => _openAddDialog(context, tipo: 'abono'),
+          icon: const Icon(Icons.remove),
+          label: const Text('Abono'),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(15),
+            ),
           ),
-        ],
-      ),
+        ),
+      ],
+    ),
+  ),
+),
+
+
       body: c.loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
                 Container(
                   width: double.infinity,
-                  color: Colors.black12,
+                  margin: const EdgeInsets.all(12),
                   padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: Colors.black12,
+                    borderRadius: BorderRadius.circular(
+                      20,
+                    ), // ⬅️ Bordes redondeados
+                  ),
                   child: Text(
                     'Total actual: \$${formatter.format(c.total)}',
                     style: const TextStyle(
@@ -72,6 +102,7 @@ class _MovimientosPageState extends State<MovimientosPage> {
                     ),
                   ),
                 ),
+
                 Expanded(
                   child: c.movimientos.isEmpty
                       ? const Center(child: Text('No hay movimientos'))
@@ -83,8 +114,8 @@ class _MovimientosPageState extends State<MovimientosPage> {
 
                             final isPrestamo = m.tipo == "prestamo";
                             final bgColor = isPrestamo
-                                ? const Color.fromARGB(255, 255, 235, 235)
-                                : const Color.fromARGB(255, 239, 255, 237);
+                                ? const Color.fromARGB(255, 255, 241, 241)
+                                : const Color.fromARGB(255, 243, 254, 242);
 
                             return Card(
                               elevation: 2,

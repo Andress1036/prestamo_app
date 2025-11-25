@@ -83,8 +83,8 @@ class _MovimientosPageState extends State<MovimientosPage> {
 
                             final isPrestamo = m.tipo == "prestamo";
                             final bgColor = isPrestamo
-                                ? Colors.red.shade100
-                                : Colors.green.shade100;
+                                ? const Color.fromARGB(255, 255, 235, 235)
+                                : const Color.fromARGB(255, 239, 255, 237);
 
                             return Card(
                               elevation: 2,

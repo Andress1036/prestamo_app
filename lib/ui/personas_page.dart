@@ -53,7 +53,7 @@ class _PersonasPageState extends State<PersonasPage> {
                           providers: [
                             ChangeNotifierProvider(create: (_) => MovimientoController()),
                           ],
-                          child: MovimientosPage(personaId: p.id!, personaName: p.nombre[0].toUpperCase()),
+                          child: MovimientosPage(personaId: p.id!, personaName: p.nombre),
                         ),
                       ),
                     );
@@ -99,7 +99,7 @@ class _PersonasPageState extends State<PersonasPage> {
             onPressed: () async {
               final name = nombreCtrl.text.trim();
               if (name.isEmpty) return;
-              await Provider.of<PersonaController>(context, listen: false).addPersona(name);
+              await Provider.of<PersonaController>(context, listen: false).addPersona(name[0].toUpperCase() + name.substring(1));
               if (!mounted) return;
               Navigator.pop(context);
             },

@@ -35,74 +35,89 @@ class _MovimientosPageState extends State<MovimientosPage> {
   @override
   Widget build(BuildContext context) {
     final c = Provider.of<MovimientoController>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    // COLORES ADAPTADOS A MODO OSCURO
+    final totalBg = isDark ? Colors.grey.shade800 : Colors.black12;
+    final textLight = isDark ? Colors.white : Colors.black;
+    final fechaColor = isDark ? Colors.grey[300] : Colors.grey.shade700;
 
     return Scaffold(
       appBar: AppBar(title: Text('Movimientos de ${widget.personaName}')),
+
+      // ------------------------------
+      // BOTTOM BAR REDONDEADO
+      // ------------------------------
       bottomNavigationBar: ClipRRect(
-  borderRadius: const BorderRadius.only(
-    topLeft: Radius.circular(25),
-    topRight: Radius.circular(25),
-  ),
-  child: BottomAppBar(
-    shape: const CircularNotchedRectangle(),
-    height: 70,
-    color: const Color.fromARGB(255, 238, 223, 223),
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-      children: [
-        ElevatedButton.icon(
-          onPressed: () => _openAddDialog(context, tipo: 'prestamo'),
-          icon: const Icon(Icons.add),
-          label: const Text('Préstamo'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15), // botones redondeados
-            ),
+        borderRadius: const BorderRadius.only(
+          topLeft: Radius.circular(25),
+          topRight: Radius.circular(25),
+        ),
+        child: BottomAppBar(
+          shape: const CircularNotchedRectangle(),
+          height: 70,
+          color: isDark
+              ? Colors.grey.shade900
+              : const Color.fromARGB(255, 238, 223, 223),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+            children: [
+              ElevatedButton.icon(
+                onPressed: () => _openAddDialog(context, tipo: 'prestamo'),
+                icon: const Icon(Icons.add),
+                label: const Text('Préstamo'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () => _openAddDialog(context, tipo: 'abono'),
+                icon: const Icon(Icons.remove),
+                label: const Text('Abono'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.green,
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+              ),
+            ],
           ),
         ),
-        ElevatedButton.icon(
-          onPressed: () => _openAddDialog(context, tipo: 'abono'),
-          icon: const Icon(Icons.remove),
-          label: const Text('Abono'),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(15),
-            ),
-          ),
-        ),
-      ],
-    ),
-  ),
-),
+      ),
 
-
+      // ------------------------------
+      // LISTA + TOTAL
+      // ------------------------------
       body: c.loading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                // TOTAL
                 Container(
                   width: double.infinity,
                   margin: const EdgeInsets.all(12),
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.black12,
-                    borderRadius: BorderRadius.circular(
-                      20,
-                    ), // ⬅️ Bordes redondeados
+                    color: totalBg,
+                    borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
                     'Total actual: \$${formatter.format(c.total)}',
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.bold,
+                      color: textLight,
                     ),
                   ),
                 ),
 
+                // LISTA
                 Expanded(
                   child: c.movimientos.isEmpty
                       ? const Center(child: Text('No hay movimientos'))
@@ -111,14 +126,19 @@ class _MovimientosPageState extends State<MovimientosPage> {
                           itemCount: c.movimientos.length,
                           itemBuilder: (_, i) {
                             final Movimiento m = c.movimientos[i];
-
                             final isPrestamo = m.tipo == "prestamo";
-                            final bgColor = isPrestamo
-                                ? const Color.fromARGB(255, 255, 241, 241)
-                                : const Color.fromARGB(255, 243, 254, 242);
+
+                            // Colores según tipo, ajustados a tema oscuro
+                            final bgColor = isDark
+                                ? (isPrestamo
+                                    ? Colors.red.withOpacity(0.15)
+                                    : Colors.green.withOpacity(0.15))
+                                : (isPrestamo
+                                    ? const Color.fromARGB(255, 255, 241, 241)
+                                    : const Color.fromARGB(255, 243, 254, 242));
 
                             return Card(
-                              elevation: 2,
+                              elevation: isDark ? 0 : 2,
                               margin: const EdgeInsets.only(bottom: 8),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(10),
@@ -136,23 +156,19 @@ class _MovimientosPageState extends State<MovimientosPage> {
                                       isPrestamo
                                           ? Icons.call_made
                                           : Icons.call_received,
-                                      color: isPrestamo
-                                          ? Colors.red
-                                          : Colors.green,
+                                      color:
+                                          isPrestamo ? Colors.red : Colors.green,
                                       size: 24,
                                     ),
 
                                     const SizedBox(width: 10),
 
-                                    // TEXTO PRINCIPAL (monto + descripción)
+                                    // TEXTO
                                     Expanded(
                                       child: Column(
                                         crossAxisAlignment:
                                             CrossAxisAlignment.start,
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
                                         children: [
-                                          // MONTO + FECHA EN LA MISMA LÍNEA
                                           Row(
                                             mainAxisAlignment:
                                                 MainAxisAlignment.spaceBetween,
@@ -171,7 +187,7 @@ class _MovimientosPageState extends State<MovimientosPage> {
                                                 '${m.fecha.day}/${m.fecha.month}/${m.fecha.year}',
                                                 style: TextStyle(
                                                   fontSize: 13,
-                                                  color: Colors.grey.shade700,
+                                                  color: fechaColor,
                                                 ),
                                               ),
                                             ],
@@ -181,8 +197,9 @@ class _MovimientosPageState extends State<MovimientosPage> {
 
                                           Text(
                                             m.descripcion,
-                                            style: const TextStyle(
+                                            style: TextStyle(
                                               fontSize: 14,
+                                              color: textLight,
                                             ),
                                             overflow: TextOverflow.ellipsis,
                                           ),
@@ -204,9 +221,11 @@ class _MovimientosPageState extends State<MovimientosPage> {
                                               _openEditDialog(context, m),
                                         ),
                                         IconButton(
-                                          icon: const Icon(
+                                          icon: Icon(
                                             Icons.delete,
-                                            color: Colors.black54,
+                                            color: isDark
+                                                ? Colors.white70
+                                                : Colors.black54,
                                           ),
                                           iconSize: 20,
                                           onPressed: () =>
@@ -225,6 +244,10 @@ class _MovimientosPageState extends State<MovimientosPage> {
             ),
     );
   }
+
+  // ------------------------------
+  // DIALOGS
+  // ------------------------------
 
   void _openAddDialog(BuildContext context, {required String tipo}) {
     final montoCtrl = TextEditingController();

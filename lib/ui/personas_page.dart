@@ -63,7 +63,7 @@ class _PersonasPageState extends State<PersonasPage> {
               itemBuilder: (_, i) {
                 final p = personaCtrl.personas[i];
                 return Container(
-                  margin: const EdgeInsets.symmetric(vertical: 6),
+                  margin: const EdgeInsets.symmetric(vertical: 3),
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(16),
@@ -77,7 +77,7 @@ class _PersonasPageState extends State<PersonasPage> {
                   ),
                   child: ListTile(
                     contentPadding:
-                        const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 0),
                     title: Text(
                       p.nombre,
                       style: const TextStyle(
